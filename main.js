@@ -2,6 +2,7 @@ let form = document.querySelector('.form');
 let input = document.querySelector('.input_search');
 let searchResultsList = document.querySelector(".wrapper__rep");
 let res = document.createElement("li");
+let repos = [];
 
 let updateWordItem = debounceFunc(e => search(e), 450)
 
@@ -19,14 +20,13 @@ function search(e) {
                 res.textContent = item.name;
                 newWrapper.appendChild(res);
 
+
                 res.addEventListener("click", e => {
                     e.preventDefault();
-                    let login = item.owner.login;
-                    let stars = item['stargazers_count'];
-                    createRepos(item.name, login, stars);
-                    wrapper.innerHTML = null;
+                    let repoObj = { name : item.name, login : item.owner.login, stars : item['stargazers_count']}
+                    updateRepos(repoObj, repos);
+                    newWrapper.innerHTML = null;
                     input.value = "";
-
                 })
 
             })
@@ -48,34 +48,49 @@ async function searchRepositories(query) {
     });
 }
 
+function updateRepos(repo, repos) {
+    if (repos.length >= 5) {
+        repos.pop();
+    }
+    repos.unshift(repo);
+    searchResultsList.innerHTML = null;
+
+    // let resultList = [];
+    repos.map(item => {
+        const itemCard = createRepos(item)
+        searchResultsList.prepend(itemCard);
+    })
+
+    console.log(repos);
+}
 
 
-function createRepos(name, owner, stars) {
-    let block = document.createElement("div");
+
+function createRepos(repo) {
+    let block = document.createElement("li");
     let content = document.createElement("div");
     let button = document.createElement("button");
-    content.textContent = `Name: ${name} 
-  Owner: ${owner} 
-  Stars: ${stars}`;
+    content.textContent = `Name: ${repo.name} 
+  Owner: ${repo.owner} 
+  Stars: ${repo.stars}`;
     block.classList.add("result__content");
     block.classList.add("result__rep-card");
     button.classList.add("repos__button-close");
     content.classList.add("texts");
     block.append(content, button);
-    searchResultsList.appendChild(block);
     button.addEventListener("click", function () {
         button.removeEventListener("click", arguments.callee);
         block.remove();
     });
-
+    return block;
 }
 
 
 
-function searchNames(value) {
-    input.value = value;
-    removeElements();
-}
+// function searchNames(value) {
+//     input.value = value;
+//     removeElements();
+// }
 
 function removeElements() {
     let items = document.querySelectorAll(".results__item");
